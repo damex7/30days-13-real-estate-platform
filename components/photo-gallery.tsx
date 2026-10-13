@@ -4,12 +4,13 @@ import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import Image from "next/image";
 import { useState, type KeyboardEvent } from "react";
 
+import type { ListingPhoto } from "@/lib/listing";
 import { cn } from "@/lib/utils";
 
 const ARROW =
   "absolute top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none";
 
-export function PhotoGallery({ photos, alt }: { photos: string[]; alt: string }) {
+export function PhotoGallery({ photos, alt }: { photos: ListingPhoto[]; alt: string }) {
   const [index, setIndex] = useState(0);
   const count = photos.length;
 
@@ -35,8 +36,8 @@ export function PhotoGallery({ photos, alt }: { photos: string[]; alt: string })
     <section aria-roledescription="carousel" aria-label="Property photos" onKeyDown={onKeyDown}>
       <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-line">
         <Image
-          key={photos[index]}
-          src={photos[index]}
+          key={photos[index].full}
+          src={photos[index].full}
           alt={`${alt}, photo ${index + 1} of ${count}`}
           fill
           loading="eager"
@@ -61,7 +62,7 @@ export function PhotoGallery({ photos, alt }: { photos: string[]; alt: string })
       {count > 1 && (
         <ul className="mt-3 flex gap-2 overflow-x-auto pb-1">
           {photos.map((photo, i) => (
-            <li key={photo} className="shrink-0">
+            <li key={photo.full} className="shrink-0">
               <button
                 type="button"
                 onClick={() => setIndex(i)}
@@ -72,7 +73,7 @@ export function PhotoGallery({ photos, alt }: { photos: string[]; alt: string })
                   i === index ? "ring-brand" : "opacity-70 hover:opacity-100",
                 )}
               >
-                <Image src={photo} alt="" fill sizes="96px" className="object-cover" />
+                <Image src={photo.thumb} alt="" fill sizes="96px" className="object-cover" />
               </button>
             </li>
           ))}

@@ -1,0 +1,66 @@
+/** Sample South African listings. Prices are illustrative and agents are fictional. */
+
+import type { SampleMarket } from "@/lib/markets/sample/types";
+
+export const southAfrica: SampleMarket = {
+  slug: "south-africa",
+  code: "ZA",
+  name: "South Africa",
+  basePath: "/international/south-africa",
+  currency: "ZAR",
+  rentPeriod: "month",
+  sizeUnit: "sqm",
+  regionLabel: "Province",
+  regions: [
+    { value: "western-cape", label: "Western Cape" },
+    { value: "gauteng", label: "Gauteng" },
+    { value: "kwazulu-natal", label: "KwaZulu-Natal" },
+  ],
+  types: [
+    { value: "house", label: "House", category: "house", titleNoun: "House" },
+    { value: "townhouse", label: "Townhouse", category: "house", titleNoun: "Townhouse" },
+    { value: "apartment", label: "Apartment", category: "flat", titleNoun: "Apartment" },
+    { value: "vacant-land", label: "Vacant land", category: "land" },
+  ],
+  areas: {
+    seaPoint: { name: "Sea Point", city: "Cape Town", region: "western-cape", lat: -33.915, lng: 18.387, blurb: "Sea Point is a lively Atlantic Seaboard suburb with a famous beachfront promenade." },
+    campsBay: { name: "Camps Bay", city: "Cape Town", region: "western-cape", lat: -33.951, lng: 18.377, blurb: "Camps Bay sits between the Twelve Apostles and a palm-lined beach, one of Cape Town's most exclusive suburbs." },
+    gardens: { name: "Gardens", city: "Cape Town", region: "western-cape", lat: -33.933, lng: 18.411, blurb: "Gardens is a central Cape Town neighbourhood below Table Mountain, close to Kloof Street's cafés." },
+    durbanville: { name: "Durbanville", city: "Cape Town", region: "western-cape", lat: -33.832, lng: 18.647, blurb: "Durbanville is a family suburb in Cape Town's northern wine region with good schools." },
+    stellenbosch: { name: "Paradyskloof", city: "Stellenbosch", region: "western-cape", lat: -33.955, lng: 18.865, blurb: "Stellenbosch is a historic university town in the heart of the Cape Winelands." },
+    sandton: { name: "Sandton", city: "Johannesburg", region: "gauteng", lat: -26.107, lng: 28.056, blurb: "Sandton is Johannesburg's financial district, with the Gautrain, Sandton City and Nelson Mandela Square." },
+    fourways: { name: "Fourways", city: "Johannesburg", region: "gauteng", lat: -26.018, lng: 28.008, blurb: "Fourways is a popular family suburb in northern Johannesburg with secure estates and a large mall." },
+    rosebank: { name: "Rosebank", city: "Johannesburg", region: "gauteng", lat: -26.146, lng: 28.043, blurb: "Rosebank is a walkable Johannesburg suburb with galleries, a Gautrain station and busy malls." },
+    waterkloof: { name: "Waterkloof", city: "Pretoria", region: "gauteng", lat: -25.78, lng: 28.245, blurb: "Waterkloof is one of Pretoria's most prestigious suburbs, home to many embassies." },
+    umhlanga: { name: "Umhlanga", city: "Durban", region: "kwazulu-natal", lat: -29.726, lng: 31.085, blurb: "Umhlanga is a coastal town north of Durban known for its lighthouse, beaches and Gateway mall." },
+  },
+  agents: {
+    thandi: { name: "Thandi Nkosi", company: "Table Bay Property Group" },
+    pieter: { name: "Pieter van Wyk", company: "Highveld Homes" },
+    ayesha: { name: "Ayesha Naidoo", company: "Coastal Lifestyle Properties" },
+  },
+  seeds: [
+    { id: 6001, purpose: "sale", type: "apartment", beds: 2, baths: 2, area: "seaPoint", street: "Beach Road", price: 4_200_000, size: 105, listed: "2026-10-06", agent: "thandi", doc: "Sectional title", serviceCharge: 3_800, parking: 1, features: ["Sea views", "Balcony", "24-hour security", "Walk to the promenade"], extras: [["Rates and taxes", "R 1 650 a month"]] },
+    { id: 6002, purpose: "sale", type: "house", beds: 4, baths: 4, area: "campsBay", street: "Victoria Road", price: 28_000_000, size: 480, listed: "2026-09-19", agent: "thandi", titleSuffix: "with Ocean Views", doc: "Full title", parking: 2, features: ["Ocean and mountain views", "Rim-flow pool", "Staff accommodation", "Solar power", "Double garage"], extras: [["Rates and taxes", "R 9 800 a month"]] },
+    { id: 6003, purpose: "rent", type: "apartment", beds: 1, baths: 1, area: "gardens", street: "Kloof Street", price: 16_500, size: 55, listed: "2026-10-08", agent: "thandi", furnished: true, parking: 1, features: ["Table Mountain views", "Fibre internet", "Backup power"] },
+    { id: 6004, purpose: "sale", type: "house", beds: 3, baths: 2, area: "durbanville", street: "Durbanville Hills", price: 3_200_000, size: 210, listed: "2026-09-23", agent: "thandi", doc: "Full title", parking: 2, features: ["Garden", "Double garage", "Swimming pool", "Near wine farms"], extras: [["Rates and taxes", "R 1 950 a month"]] },
+    { id: 6005, purpose: "sale", type: "vacant-land", area: "stellenbosch", street: "Paradyskloof", price: 2_200_000, size: 800, listed: "2026-08-29", agent: "thandi", doc: "Full title", features: ["Mountain views", "Secure estate", "Building plans approved"] },
+    { id: 6006, purpose: "sale", type: "townhouse", beds: 3, baths: 2, area: "sandton", street: "Morningside", price: 3_400_000, size: 180, listed: "2026-10-02", agent: "pieter", doc: "Sectional title", serviceCharge: 2_900, parking: 2, features: ["Secure complex", "Private garden", "Communal pool", "Backup power"], extras: [["Rates and taxes", "R 1 700 a month"]] },
+    { id: 6007, purpose: "sale", type: "house", beds: 4, baths: 3, area: "fourways", street: "Fourways Gardens", price: 3_900_000, size: 320, listed: "2026-09-13", agent: "pieter", doc: "Full title", serviceCharge: 1_800, parking: 2, features: ["Secure estate", "Swimming pool", "Garden", "Solar panels"] },
+    { id: 6008, purpose: "rent", type: "apartment", beds: 2, baths: 2, area: "rosebank", street: "Oxford Road", price: 19_000, size: 95, listed: "2026-10-05", agent: "pieter", parking: 1, features: ["Walk to the Gautrain", "Gym", "Rooftop terrace", "Backup power"] },
+    { id: 6009, purpose: "sale", type: "house", beds: 5, baths: 4, area: "waterkloof", street: "Albert Street", price: 9_500_000, size: 650, listed: "2026-09-07", agent: "pieter", doc: "Full title", parking: 3, features: ["Large garden", "Swimming pool", "Staff quarters", "Borehole", "Electric fence"], extras: [["Rates and taxes", "R 4 200 a month"]] },
+    { id: 6010, purpose: "sale", type: "apartment", beds: 3, baths: 2, area: "umhlanga", street: "Lighthouse Road", price: 4_800_000, size: 160, listed: "2026-09-25", agent: "ayesha", doc: "Sectional title", serviceCharge: 4_500, parking: 2, features: ["Sea views", "Swimming pool", "Walk to the beach", "24-hour security"] },
+    { id: 6011, purpose: "rent", type: "house", beds: 3, baths: 2, area: "umhlanga", street: "Umhlanga Ridge", price: 28_000, size: 220, listed: "2026-10-01", agent: "ayesha", parking: 2, features: ["Secure estate", "Garden", "Swimming pool"] },
+  ],
+  priceOptions: [8_000, 15_000, 25_000, 50_000, 1_000_000, 2_500_000, 5_000_000, 10_000_000, 25_000_000],
+  docLabel: "Title",
+  serviceCharge: { label: "Levies", period: "month" },
+  rentTerms: [
+    ["Deposit", "1–2 months' rent"],
+    ["Lease", "12 months"],
+    ["Utilities", "Water and electricity billed monthly"],
+  ],
+  luxuryFrom: { sale: 10_000_000, rent: 60_000 },
+  keywordPlaceholder: "Suburb or street",
+  tagline: "Cape Town, Johannesburg, Pretoria and Durban",
+};

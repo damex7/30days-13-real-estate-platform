@@ -1,5 +1,5 @@
 import { ListingCard, ListingCardSkeleton } from "@/components/listing-card";
-import type { Listing } from "@/lib/simplyrets";
+import type { Listing } from "@/lib/listing";
 
 const GRID = "grid gap-6 sm:grid-cols-2 xl:grid-cols-3";
 

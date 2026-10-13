@@ -1,82 +1,72 @@
 import { ArrowLeft, Bath, BedDouble, CalendarDays, Clock, ExternalLink, Mail, MapPin, Phone, Ruler } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { cache, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { PhotoGallery } from "@/components/photo-gallery";
 import { StatusBadge } from "@/components/status-badge";
-import { formatBaths, formatDate, formatNumber, formatPrice, formatPropertyType } from "@/lib/format";
-import { getListing } from "@/lib/simplyrets";
+import { formatDate, formatNumber, formatPrice } from "@/lib/format";
+import type { Listing } from "@/lib/listing";
 
-type Props = PageProps<"/properties/[mlsId]">;
-
-// Shared by generateMetadata and the page so the listing is fetched once.
-const loadListing = cache(async (mlsId: string) => {
-  if (!/^\d{1,12}$/.test(mlsId)) notFound();
-  const listing = await getListing(Number(mlsId));
-  if (!listing) notFound();
-  return listing;
-});
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const listing = await loadListing((await params).mlsId);
-  const title = `${listing.address}${listing.city ? `, ${listing.city}` : ""}`;
+export function listingMetadata(listing: Listing): Metadata {
+  const title = `${listing.title} – ${listing.address}`;
+  const stats = [
+    formatPrice(listing),
+    listing.beds != null && `${listing.beds} bd`,
+    listing.baths != null && `${listing.baths} ba`,
+  ].filter(Boolean);
   return {
     title,
-    description: `${formatPrice(listing.price)} · ${listing.beds ?? "–"} bd · ${formatBaths(listing.bathsFull, listing.bathsHalf) ?? "–"} ba`,
-    openGraph: { title, images: listing.photos.slice(0, 1) },
+    description: stats.join(" · "),
+    openGraph: { title, images: listing.photos.slice(0, 1).map((p) => p.full) },
   };
 }
 
-export default async function ListingPage({ params }: Props) {
-  const listing = await loadListing((await params).mlsId);
-  const baths = formatBaths(listing.bathsFull, listing.bathsHalf);
-  const listed = formatDate(listing.listDate);
-  const locality = [listing.city, [listing.state, listing.zip].filter(Boolean).join(" ")]
-    .filter(Boolean)
-    .join(", ");
-  const mapHref =
-    listing.lat != null && listing.lng != null
-      ? `https://www.google.com/maps/search/?api=1&query=${listing.lat},${listing.lng}`
-      : null;
+export function ListingDetail({ listing, backHref }: { listing: Listing; backHref: string }) {
+  const listed = formatDate(listing.listedAt);
+  const mapHref = listing.coords
+    ? `https://www.google.com/maps/search/?api=1&query=${listing.coords.lat},${listing.coords.lng}`
+    : null;
 
+  const areaLabel =
+    listing.area?.kind === "land" ? "Plot size" : listing.area?.unit === "sqm" ? "Floor area" : "Sq ft";
   const stats = [
     { icon: BedDouble, label: "Beds", value: listing.beds },
-    { icon: Bath, label: "Baths", value: baths },
-    { icon: Ruler, label: "Sq ft", value: listing.sqft != null ? formatNumber(listing.sqft) : null },
+    { icon: Bath, label: "Baths", value: listing.baths },
+    {
+      icon: Ruler,
+      label: areaLabel,
+      value: listing.area ? `${formatNumber(listing.area.value)}${listing.area.unit === "sqm" ? " sqm" : ""}` : null,
+    },
     { icon: CalendarDays, label: "Built", value: listing.yearBuilt },
   ].filter((s) => s.value != null);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <Link href="/properties" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground">
+      <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground">
         <ArrowLeft className="size-4" aria-hidden /> Back to listings
       </Link>
 
       <div className="mt-4">
-        <PhotoGallery photos={listing.photos} alt={listing.address} />
+        <PhotoGallery photos={listing.photos} alt={listing.title} />
       </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_22rem]">
         <article className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={listing.status} />
-            {formatPropertyType(listing.type) && (
-              <span className="rounded-full border border-line px-2.5 py-1 text-xs text-muted">
-                {formatPropertyType(listing.type)}
-              </span>
+            {listing.typeLabel && (
+              <span className="rounded-full border border-line px-2.5 py-1 text-xs text-muted">{listing.typeLabel}</span>
             )}
-            <span className="text-xs text-muted">MLS #{listing.id}</span>
+            <span className="text-xs text-muted">{listing.reference}</span>
           </div>
 
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">{listing.address}</h1>
-          {locality && (
-            <p className="mt-1 flex items-center gap-1.5 text-muted">
-              <MapPin className="size-4 shrink-0" aria-hidden /> {locality}
-            </p>
-          )}
-          <p className="mt-4 text-3xl font-semibold tracking-tight text-brand">{formatPrice(listing.price)}</p>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">{listing.title}</h1>
+          <p className="mt-1 flex items-center gap-1.5 text-muted">
+            <MapPin className="size-4 shrink-0" aria-hidden />
+            {[listing.address, listing.locality].filter(Boolean).join(", ")}
+          </p>
+          <p className="mt-4 text-3xl font-semibold tracking-tight text-brand">{formatPrice(listing)}</p>
 
           {stats.length > 0 && (
             <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -91,9 +81,9 @@ export default async function ListingPage({ params }: Props) {
             </dl>
           )}
 
-          {listing.remarks && (
-            <Section title="About this home">
-              <p className="leading-relaxed whitespace-pre-line text-foreground/85">{listing.remarks}</p>
+          {listing.description && (
+            <Section title="About this property">
+              <p className="leading-relaxed whitespace-pre-line text-foreground/85">{listing.description}</p>
             </Section>
           )}
 
@@ -144,11 +134,11 @@ export default async function ListingPage({ params }: Props) {
             {listing.agent ? (
               <>
                 <p className="mt-2 text-lg font-semibold">{listing.agent.name}</p>
-                {listing.officeName && <p className="text-sm text-muted">{listing.officeName}</p>}
+                {listing.agent.company && <p className="text-sm text-muted">{listing.agent.company}</p>}
                 <div className="mt-4 space-y-2">
                   {listing.agent.email && (
                     <a
-                      href={`mailto:${listing.agent.email}?subject=${encodeURIComponent(`Inquiry about ${listing.address} (MLS #${listing.id})`)}`}
+                      href={`mailto:${listing.agent.email}?subject=${encodeURIComponent(`Inquiry about ${listing.title} (${listing.reference})`)}`}
                       className="flex h-10 items-center justify-center gap-2 rounded-lg bg-brand text-sm font-medium text-brand-foreground transition hover:bg-brand-hover"
                     >
                       <Mail className="size-4" aria-hidden /> Email agent
@@ -187,7 +177,7 @@ export default async function ListingPage({ params }: Props) {
                 rel="noreferrer"
                 className="flex items-center gap-2 font-medium text-brand hover:underline"
               >
-                <MapPin className="size-4" aria-hidden /> View on map
+                <MapPin className="size-4" aria-hidden /> View area on map
                 <ExternalLink className="size-3.5" aria-hidden />
               </a>
             )}

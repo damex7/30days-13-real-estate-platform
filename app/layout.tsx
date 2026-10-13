@@ -18,11 +18,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Hearthstone Realty: Find your next home",
+    default: "Hearthstone Realty: Homes for sale and rent in Nigeria",
     template: "%s · Hearthstone Realty",
   },
   description:
-    "Browse homes, rentals, land and commercial listings, filtered by price, beds and baths.",
+    "Houses, flats and land for sale and rent across Nigeria, plus listings in the UK, UAE, Ghana, Kenya, South Africa and the US.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

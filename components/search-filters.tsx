@@ -3,21 +3,12 @@ import Form from "next/form";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import {
-  BATH_OPTIONS,
-  BED_OPTIONS,
-  PRICE_OPTIONS,
-  PROPERTY_TYPES,
-  SORT_OPTIONS,
-  buildListingsHref,
-  hasActiveFilters,
-  type ListingFilters,
-} from "@/lib/filters";
-import { formatPriceCompact } from "@/lib/format";
+import type { Option, SelectField } from "@/lib/search-params";
+import { cn } from "@/lib/utils";
 
-function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: ReactNode }) {
+function Field({ label, htmlFor, className, children }: { label: string; htmlFor: string; className?: string; children: ReactNode }) {
   return (
-    <div className="space-y-1.5">
+    <div className={cn("space-y-1.5", className)}>
       <label htmlFor={htmlFor} className="text-xs font-medium text-muted">
         {label}
       </label>
@@ -26,14 +17,32 @@ function Field({ label, htmlFor, children }: { label: string; htmlFor: string; c
   );
 }
 
-export function SearchFilters({ filters }: { filters: ListingFilters }) {
+/**
+ * A GET form that writes filters to the URL. Each market supplies its own
+ * fields, so this component only knows how to lay them out.
+ */
+export function SearchFilters({
+  action,
+  formKey,
+  keyword,
+  keywordPlaceholder,
+  fields,
+  sortOptions,
+  sort,
+  showClear,
+}: {
+  action: string;
+  /** Changes with the URL so uncontrolled fields reset after navigation. */
+  formKey: string;
+  keyword: string | undefined;
+  keywordPlaceholder: string;
+  fields: SelectField[];
+  sortOptions: readonly Option[];
+  sort: string;
+  showClear: boolean;
+}) {
   return (
-    // Keyed by the current URL so uncontrolled fields reset after navigation.
-    <Form
-      key={buildListingsHref(filters)}
-      action="/properties"
-      className="space-y-4 rounded-xl border border-line bg-surface p-4"
-    >
+    <Form key={formKey} action={action} className="space-y-4 rounded-xl border border-line bg-surface p-4">
       <Field label="Keyword" htmlFor="q">
         <div className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted" aria-hidden />
@@ -41,70 +50,31 @@ export function SearchFilters({ filters }: { filters: ListingFilters }) {
             id="q"
             name="q"
             type="search"
-            defaultValue={filters.q}
-            placeholder="City, ZIP, street, MLS #"
+            defaultValue={keyword}
+            placeholder={keywordPlaceholder}
             className="field pl-9"
           />
         </div>
       </Field>
 
-      <Field label="Property type" htmlFor="type">
-        <select id="type" name="type" defaultValue={filters.type ?? ""} className="field">
-          <option value="">Any type</option>
-          {PROPERTY_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-      </Field>
-
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Min price" htmlFor="minprice">
-          <select id="minprice" name="minprice" defaultValue={filters.minprice ?? ""} className="field">
-            <option value="">No min</option>
-            {PRICE_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {formatPriceCompact(p)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Max price" htmlFor="maxprice">
-          <select id="maxprice" name="maxprice" defaultValue={filters.maxprice ?? ""} className="field">
-            <option value="">No max</option>
-            {PRICE_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {formatPriceCompact(p)}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Beds" htmlFor="minbeds">
-          <select id="minbeds" name="minbeds" defaultValue={filters.minbeds ?? ""} className="field">
-            <option value="">Any</option>
-            {BED_OPTIONS.map((n) => (
-              <option key={n} value={n}>
-                {n}+
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Baths" htmlFor="minbaths">
-          <select id="minbaths" name="minbaths" defaultValue={filters.minbaths ?? ""} className="field">
-            <option value="">Any</option>
-            {BATH_OPTIONS.map((n) => (
-              <option key={n} value={n}>
-                {n}+
-              </option>
-            ))}
-          </select>
-        </Field>
+        {fields.map((field) => (
+          <Field key={field.name} label={field.label} htmlFor={field.name} className={field.half ? undefined : "col-span-2"}>
+            <select id={field.name} name={field.name} defaultValue={field.value ?? ""} className="field">
+              <option value="">{field.anyLabel}</option>
+              {field.options.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ))}
       </div>
 
       <Field label="Sort by" htmlFor="sort">
-        <select id="sort" name="sort" defaultValue={filters.sort} className="field">
-          {SORT_OPTIONS.map((s) => (
+        <select id="sort" name="sort" defaultValue={sort} className="field">
+          {sortOptions.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
             </option>
@@ -119,8 +89,8 @@ export function SearchFilters({ filters }: { filters: ListingFilters }) {
         >
           Apply filters
         </button>
-        {hasActiveFilters(filters) && (
-          <Link href="/properties" className="text-sm text-muted underline-offset-2 hover:text-foreground hover:underline">
+        {showClear && (
+          <Link href={action} className="text-sm text-muted underline-offset-2 hover:text-foreground hover:underline">
             Clear
           </Link>
         )}

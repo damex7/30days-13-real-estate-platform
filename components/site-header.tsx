@@ -2,9 +2,10 @@ import { House } from "lucide-react";
 import Link from "next/link";
 
 const NAV = [
-  { href: "/properties", label: "Browse homes" },
-  { href: "/properties?type=rental", label: "Rentals" },
-  { href: "/properties?type=land", label: "Land" },
+  { href: "/properties?purpose=sale", label: "Buy" },
+  { href: "/properties?purpose=rent", label: "Rent" },
+  { href: "/properties?type=land", label: "Land", desktopOnly: true },
+  { href: "/international", label: "International" },
 ];
 
 export function SiteHeader() {
@@ -15,15 +16,15 @@ export function SiteHeader() {
           <span className="grid size-8 place-items-center rounded-lg bg-brand text-brand-foreground">
             <House className="size-4" aria-hidden />
           </span>
-          <span>Hearthstone</span>
+          <span className="hidden min-[400px]:inline">Hearthstone</span>
         </Link>
         <nav aria-label="Main">
-          <ul className="flex items-center gap-1 text-sm">
-            {NAV.map((item, i) => (
-              <li key={item.href} className={i > 0 ? "hidden sm:block" : undefined}>
+          <ul className="flex items-center gap-0.5 text-sm sm:gap-1">
+            {NAV.map((item) => (
+              <li key={item.href} className={item.desktopOnly ? "hidden sm:block" : undefined}>
                 <Link
                   href={item.href}
-                  className="rounded-md px-3 py-2 text-muted transition hover:bg-line/60 hover:text-foreground"
+                  className="rounded-md px-2.5 py-2 text-muted transition hover:bg-line/60 hover:text-foreground sm:px-3"
                 >
                   {item.label}
                 </Link>

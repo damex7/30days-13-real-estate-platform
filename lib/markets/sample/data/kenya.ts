@@ -1,0 +1,66 @@
+/** Sample Kenyan listings. Prices are illustrative and agents are fictional. */
+
+import type { SampleMarket } from "@/lib/markets/sample/types";
+
+export const kenya: SampleMarket = {
+  slug: "kenya",
+  code: "KE",
+  name: "Kenya",
+  basePath: "/international/kenya",
+  currency: "KES",
+  rentPeriod: "month",
+  sizeUnit: "sqm",
+  regionLabel: "County",
+  regions: [
+    { value: "nairobi", label: "Nairobi" },
+    { value: "kiambu", label: "Kiambu" },
+    { value: "machakos", label: "Machakos" },
+    { value: "mombasa", label: "Mombasa" },
+  ],
+  types: [
+    { value: "standalone-house", label: "Standalone house", category: "house", titleNoun: "Standalone House" },
+    { value: "maisonette", label: "Maisonette", category: "house", titleNoun: "Maisonette" },
+    { value: "bungalow", label: "Bungalow", category: "bungalow", titleNoun: "Bungalow" },
+    { value: "apartment", label: "Apartment", category: "flat", titleNoun: "Apartment" },
+    { value: "bedsitter", label: "Bedsitter", category: "small", titleNoun: "Bedsitter" },
+    { value: "land", label: "Land", category: "land" },
+  ],
+  areas: {
+    karen: { name: "Karen", city: "Nairobi", region: "nairobi", lat: -1.319, lng: 36.707, blurb: "Karen is a leafy, low-density suburb on the edge of Nairobi National Park, popular for large homes on big plots." },
+    runda: { name: "Runda", city: "Nairobi", region: "nairobi", lat: -1.218, lng: 36.81, blurb: "Runda is a secure, upmarket estate near the UN offices in Gigiri." },
+    kilimani: { name: "Kilimani", city: "Nairobi", region: "nairobi", lat: -1.29, lng: 36.785, blurb: "Kilimani is a central, busy area of apartments close to Yaya Centre and the CBD." },
+    westlands: { name: "Westlands", city: "Nairobi", region: "nairobi", lat: -1.267, lng: 36.811, blurb: "Westlands is Nairobi's business and nightlife hub, with malls, offices and restaurants." },
+    kileleshwa: { name: "Kileleshwa", city: "Nairobi", region: "nairobi", lat: -1.28, lng: 36.785, blurb: "Kileleshwa is a leafy residential area of apartments just west of the city centre." },
+    roysambu: { name: "Roysambu", city: "Nairobi", region: "nairobi", lat: -1.218, lng: 36.889, blurb: "Roysambu sits along Thika Road, close to TRM mall and Kenyatta University, with affordable rentals." },
+    syokimau: { name: "Syokimau", city: "Syokimau", region: "machakos", lat: -1.37, lng: 36.93, blurb: "Syokimau is a fast-growing suburb near JKIA, with an SGR station into Nairobi." },
+    ruiru: { name: "Ruiru", city: "Ruiru", region: "kiambu", lat: -1.146, lng: 36.96, blurb: "Ruiru is a growing town off Thika Road with land and homes at lower prices than Nairobi." },
+    nyali: { name: "Nyali", city: "Mombasa", region: "mombasa", lat: -4.04, lng: 39.72, blurb: "Nyali is Mombasa's upmarket mainland suburb, close to the beach and City Mall." },
+  },
+  agents: {
+    wanjiru: { name: "Wanjiru Kamau", company: "Savannah Keys Realty" },
+    brian: { name: "Brian Otieno", company: "Thika Road Homes" },
+    fatma: { name: "Fatma Abdalla", company: "Pwani Coast Properties" },
+  },
+  seeds: [
+    { id: 5001, purpose: "sale", type: "standalone-house", beds: 5, baths: 5, area: "karen", street: "Karen Road", price: 150_000_000, size: 650, listed: "2026-09-22", agent: "wanjiru", titleSuffix: "on Half an Acre", doc: "Freehold title deed", parking: 4, features: ["Half-acre plot", "DSQ (staff quarters)", "Borehole", "Electric fence", "Mature garden"] },
+    { id: 5002, purpose: "sale", type: "apartment", beds: 3, baths: 3, area: "kilimani", street: "Argwings Kodhek Road", price: 18_500_000, size: 165, listed: "2026-10-05", agent: "wanjiru", doc: "Leasehold (sectional title)", serviceCharge: 12_000, parking: 2, features: ["Swimming pool", "Gym", "Lifts", "Backup generator", "DSQ (staff quarters)"] },
+    { id: 5003, purpose: "rent", type: "apartment", beds: 2, baths: 2, area: "westlands", street: "Rhapta Road", price: 120_000, size: 120, listed: "2026-10-08", agent: "wanjiru", furnished: true, parking: 1, features: ["Fully furnished", "Rooftop pool", "Gym", "Backup generator"] },
+    { id: 5004, purpose: "sale", type: "maisonette", beds: 4, baths: 4, area: "runda", street: "Runda Grove", price: 85_000_000, size: 420, listed: "2026-09-14", agent: "wanjiru", doc: "Freehold title deed", serviceCharge: 25_000, parking: 3, features: ["Gated community", "DSQ (staff quarters)", "Garden", "Borehole"] },
+    { id: 5005, purpose: "rent", type: "apartment", beds: 3, baths: 3, area: "kileleshwa", street: "Laikipia Road", price: 150_000, size: 180, listed: "2026-09-30", agent: "wanjiru", parking: 2, features: ["DSQ (staff quarters)", "Swimming pool", "Lifts", "Backup generator"] },
+    { id: 5006, purpose: "sale", type: "bungalow", beds: 3, baths: 2, area: "syokimau", street: "Katani Road", price: 9_500_000, size: 150, listed: "2026-09-17", agent: "brian", doc: "Freehold title deed", parking: 2, features: ["Gated community", "Garden", "Near the SGR station"] },
+    { id: 5007, purpose: "rent", type: "bedsitter", baths: 1, area: "roysambu", street: "TRM Drive", price: 12_000, size: 25, listed: "2026-10-07", agent: "brian", features: ["Own bathroom", "Water included", "Near Thika Road"] },
+    { id: 5008, purpose: "sale", type: "land", area: "ruiru", street: "Eastern Bypass", price: 2_800_000, size: 506, listed: "2026-08-28", agent: "brian", title: "1/8 Acre Plot", doc: "Freehold title deed", features: ["Ready title deed", "Near the Eastern Bypass", "Electricity nearby"] },
+    { id: 5009, purpose: "sale", type: "maisonette", beds: 4, baths: 4, area: "nyali", street: "Links Road", price: 38_000_000, size: 300, listed: "2026-09-11", agent: "fatma", doc: "Freehold title deed", parking: 2, features: ["Swimming pool", "Walk to the beach", "DSQ (staff quarters)", "Borehole"] },
+    { id: 5010, purpose: "rent", type: "apartment", beds: 3, baths: 3, area: "nyali", street: "Nyali Road", price: 85_000, size: 160, listed: "2026-10-03", agent: "fatma", furnished: true, parking: 1, features: ["Sea views", "Swimming pool", "Backup generator"] },
+  ],
+  priceOptions: [10_000, 25_000, 50_000, 100_000, 250_000, 5_000_000, 10_000_000, 25_000_000, 50_000_000, 100_000_000, 200_000_000],
+  docLabel: "Title",
+  serviceCharge: { label: "Service charge", period: "month" },
+  rentTerms: [
+    ["Deposit", "1–2 months' rent"],
+    ["Water and garbage", "Paid separately"],
+  ],
+  luxuryFrom: { sale: 60_000_000, rent: 300_000 },
+  keywordPlaceholder: "Estate, area or road",
+  tagline: "Nairobi, Kiambu and Mombasa",
+};

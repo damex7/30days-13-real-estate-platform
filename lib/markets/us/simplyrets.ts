@@ -2,7 +2,8 @@ import "server-only";
 
 import { z } from "zod";
 
-import { PAGE_SIZE, type ListingFilters } from "@/lib/filters";
+import type { Listing, ListingResults, StatusTone } from "@/lib/listing";
+import { US_BASE_PATH, US_PAGE_SIZE, type UsFilters } from "@/lib/markets/us/filters";
 
 const API_URL = "https://api.simplyrets.com";
 // The public sandbox credentials; swap in real ones through the environment.
@@ -60,7 +61,28 @@ const rawListingSchema = z.object({
 
 type RawListing = z.output<typeof rawListingSchema>;
 
-export type Listing = ReturnType<typeof toListing>;
+const TYPE_LABELS: Record<string, string> = {
+  RES: "Single family home",
+  CND: "Condo",
+  RNT: "Rental",
+  MLF: "Multi-family home",
+  CRE: "Commercial property",
+  LND: "Land",
+  FRM: "Farm",
+};
+
+const STATUS_TONES: Record<string, StatusTone> = {
+  Active: "green",
+  ActiveUnderContract: "amber",
+  Pending: "amber",
+  Closed: "stone",
+};
+
+/** "ActiveUnderContract" → "Active under contract" */
+function humanize(status: string) {
+  const words = status.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
 
 function splitList(value: string | null | undefined) {
   return (value ?? "")
@@ -69,8 +91,14 @@ function splitList(value: string | null | undefined) {
     .filter(Boolean);
 }
 
-function toListing(raw: RawListing) {
+function toListing(raw: RawListing): Listing {
   const p = raw.property;
+  const id = String(raw.mlsId);
+  const typeLabel = p?.type ? (TYPE_LABELS[p.type] ?? p.type) : null;
+  const city = raw.address?.city;
+  const status = raw.mls?.status;
+  const baths =
+    p?.bathsFull == null && p?.bathsHalf == null ? null : (p?.bathsFull ?? 0) + (p?.bathsHalf ?? 0) * 0.5;
   const agentName = [raw.agent?.firstName, raw.agent?.lastName].filter(Boolean).join(" ");
 
   const details = [
@@ -101,35 +129,38 @@ function toListing(raw: RawListing) {
     .map(([label, name]) => ({ label, name }));
 
   return {
-    id: raw.mlsId,
-    price: raw.listPrice ?? null,
-    status: raw.mls?.status ?? null,
-    type: p?.type ?? null,
+    id,
+    href: `${US_BASE_PATH}/${id}`,
+    reference: `MLS #${id}`,
+    title: `${typeLabel ?? "Home"}${city ? ` in ${city}` : ""}`,
     address: raw.address?.full ?? "Address withheld",
-    city: raw.address?.city ?? null,
-    state: raw.address?.state ?? null,
-    zip: raw.address?.postalCode ?? null,
+    locality:
+      [city, [raw.address?.state, raw.address?.postalCode].filter(Boolean).join(" ")]
+        .filter(Boolean)
+        .join(", ") || null,
+    price: raw.listPrice ?? null,
+    currency: "USD",
+    pricePeriod: null,
+    status: status ? { label: humanize(status), tone: STATUS_TONES[status] ?? "stone" } : null,
+    typeLabel,
     beds: p?.bedrooms ?? null,
-    bathsFull: p?.bathsFull ?? null,
-    bathsHalf: p?.bathsHalf ?? null,
-    sqft: p?.area ?? null,
+    baths,
+    area: p?.area != null ? { value: p.area, unit: "sq ft", kind: "floor" } : null,
     yearBuilt: p?.yearBuilt ?? null,
-    photos: raw.photos,
-    remarks: raw.remarks ?? null,
-    listDate: raw.listDate ?? null,
+    // CloudFront serves one size per photo.
+    photos: raw.photos.map((src) => ({ full: src, thumb: src })),
+    description: raw.remarks ?? null,
+    listedAt: raw.listDate ?? null,
     daysOnMarket: raw.mls?.daysOnMarket ?? null,
-    lat: raw.geo?.lat ?? null,
-    lng: raw.geo?.lng ?? null,
-    marketArea: raw.geo?.marketArea ?? null,
+    coords: raw.geo?.lat != null && raw.geo?.lng != null ? { lat: raw.geo.lat, lng: raw.geo.lng } : null,
     agent: agentName
       ? {
           name: agentName,
+          company: raw.office?.name ?? null,
           email: raw.agent?.contact?.email ?? null,
           phone: raw.agent?.contact?.cell ?? raw.agent?.contact?.office ?? null,
         }
       : null,
-    officeName: raw.office?.name ?? null,
-    officePhone: raw.office?.contact?.office ?? null,
     details,
     features: [...new Set([...splitList(p?.interiorFeatures), ...splitList(p?.exteriorFeatures)])],
     schools,
@@ -160,20 +191,10 @@ async function request(path: string, retries = 1): Promise<Response> {
   }
 }
 
-async function fetchListings(params: URLSearchParams) {
-  const res = await request(`/properties?${params}`);
-  if (!res.ok) throw new Error(`SimplyRETS search failed with ${res.status}`);
-  const listings = parseListings(await res.json());
-  const limit = Number(params.get("limit"));
-  // No total count is returned, so paging relies on the Link header.
-  const hasNext = /rel="next"/.test(res.headers.get("link") ?? "") && listings.length === limit;
-  return { listings, hasNext };
-}
-
-export async function searchListings(filters: ListingFilters) {
+export async function searchUsListings(filters: UsFilters): Promise<ListingResults> {
   const params = new URLSearchParams({
-    limit: String(PAGE_SIZE),
-    offset: String((filters.page - 1) * PAGE_SIZE),
+    limit: String(US_PAGE_SIZE),
+    offset: String((filters.page - 1) * US_PAGE_SIZE),
     sort: filters.sort,
   });
   if (filters.q) params.set("q", filters.q);
@@ -182,20 +203,16 @@ export async function searchListings(filters: ListingFilters) {
   if (filters.maxprice != null) params.set("maxprice", String(filters.maxprice));
   if (filters.minbeds != null) params.set("minbeds", String(filters.minbeds));
   if (filters.minbaths != null) params.set("minbaths", String(filters.minbaths));
-  return fetchListings(params);
+
+  const res = await request(`/properties?${params}`);
+  if (!res.ok) throw new Error(`SimplyRETS search failed with ${res.status}`);
+  const listings = parseListings(await res.json());
+  // No total count is returned, so paging relies on the Link header.
+  const hasNext = /rel="next"/.test(res.headers.get("link") ?? "") && listings.length === US_PAGE_SIZE;
+  return { listings, hasNext, total: null };
 }
 
-export async function getFeaturedListings(count = 6) {
-  const params = new URLSearchParams({
-    limit: String(count),
-    sort: "-listdate",
-    status: "Active",
-  });
-  const { listings } = await fetchListings(params);
-  return listings;
-}
-
-export async function getListing(mlsId: number) {
+export async function getUsListing(mlsId: number) {
   const res = await request(`/properties/${mlsId}`);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`SimplyRETS listing ${mlsId} failed with ${res.status}`);

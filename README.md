@@ -1,32 +1,72 @@
 # Hearthstone Realty: Day 13 Real Estate Platform
 
-A server-rendered real estate listings site built with Next.js 16.4 (App Router), TypeScript and Tailwind CSS v4. Listing data comes live from the [SimplyRETS](https://simplyrets.com) API.
+A server-rendered real estate listings site built with Next.js 16.4 (App Router), TypeScript and Tailwind CSS v4.
+
+Nigeria is the main market, covering Lagos, Abuja, Port Harcourt and Ibadan. An **International** section adds the UK, UAE, Ghana, Kenya and South Africa, plus US listings around Houston, TX pulled live from the [SimplyRETS](https://simplyrets.com) API.
 
 ## Features
 
-- **Home page** with a hero search, quick links by property type, and the newest active listings.
-- **Listings search** at `/properties`. Filters for keyword, property type, price range, minimum beds and baths, and sort order are kept in the URL, so every search can be shared and bookmarked. Pagination keeps the active filters.
-- **Property detail pages** at `/properties/[mlsId]`:
+- **Home page** with:
+  - a hero search (keyword, buy or rent, property type, maximum price);
+  - city shortcuts with listing counts;
+  - popular searches;
+  - the newest Nigerian listings;
+  - links to the international markets.
+- **Nigerian search** at `/properties`.
+  - Filters: keyword, buy or rent, state, property type, price range, bedrooms and sort order.
+  - Property types include duplexes, bungalows, flats, mini flats, self-contains and land.
+  - Prices are in naira, and rents are shown per year.
+- **International hub** at `/international`, with a search page for each country at `/international/[country]` (`uk`, `uae`, `ghana`, `kenya`, `south-africa`). Each country uses its own:
+  - currency: £, AED, GH₵, Ksh or R;
+  - rent period: per month, or per year in the UAE;
+  - floor area unit: sq ft in the UK and UAE, sqm elsewhere;
+  - property types, such as maisonettes and bedsitters in Kenya or chamber and hall in Ghana;
+  - terms, such as UK tenure, council tax and EPC ratings, UAE cheque payments and Ejari, and South African levies.
+- **US search** at `/international/us`, with SimplyRETS filters for type, price, beds and baths.
+- **Filters live in the URL**, so every search can be shared and bookmarked. Pagination keeps the active filters.
+- **Property detail pages** at `/properties/[id]`, `/international/[country]/[id]` and `/international/us/[mlsId]`:
   - photo gallery with arrow-key navigation;
-  - key stats, description, property details, features and schools;
+  - key stats, description, property details and features;
+  - Nigerian specifics: title documents (C of O, Governor's Consent, Deed of Assignment), service charges, and agency, legal and caution fees;
   - agent contact card;
   - map link.
-- **Loading, empty, error and not-found states** throughout. The demo API can be slow, so results stream in behind skeletons.
+- **Loading, empty, error and not-found states** throughout. The US API can be slow, so its results stream in behind skeletons.
 
-## Data source
+## Data sources
 
-`lib/simplyrets.ts` is a server-only client for the SimplyRETS REST API:
+Every market is normalized into one `Listing` type (`lib/listing.ts`), so the cards, filters, gallery and detail view are shared.
 
-- Responses are validated with zod and normalized into a flat `Listing` type. Unexpected or missing fields fall back to `null` instead of failing the page.
-- Requests are cached for an hour (`next: { revalidate: 3600, tags: ["listings"] }`). Only the first visit to a given search has to wait for the API.
-- Search params are parsed and clamped in `lib/filters.ts`. Invalid values are ignored rather than causing errors.
+### Nigeria and international: sample datasets
 
-By default the app uses the public demo credentials (`simplyrets` / `simplyrets`). These return sample listings around Houston, TX. To use your own feed, copy `.env.example` to `.env.local` and fill in your credentials:
+Nigeria has no shared MLS feed, and the big portals (PropertyPro, Nigeria Property Centre and others) offer no public API. The same is true almost everywhere outside the US: there is no single international listings API, only scrapers. The site therefore ships its own demo datasets, one file per country in `lib/markets/sample/data/`:
+
+- 42 Nigerian listings across 27 neighbourhoods;
+- 53 more across the other five countries;
+- prices are illustrative;
+- agents and companies are fictional;
+- photos are from [Unsplash](https://unsplash.com).
+
+`lib/markets/sample/listings.ts` builds titles, descriptions, fees and photos from that data for any market, and handles search, sorting and paging in memory. Every listing page is prerendered at build time, and unknown countries or IDs return a 404.
+
+To add a country, write a new data file (see `uk.ts` for the shape) and register it in `lib/markets/sample/index.ts`.
+
+To use real listings later, replace the functions in `listings.ts` with calls to a database or API. They only need to return the same `Listing` shape.
+
+### United States: SimplyRETS
+
+`lib/markets/us/simplyrets.ts` is a server-only client for the SimplyRETS REST API:
+
+- Responses are validated with zod. Missing or unexpected fields fall back to `null` instead of failing the page.
+- Requests are cached for an hour, so only the first visit to a given search waits for the API.
+
+By default it uses the public demo credentials (`simplyrets` / `simplyrets`). To use your own feed, copy `.env.example` to `.env.local` and fill in your credentials:
 
 ```bash
 SIMPLYRETS_API_KEY=your-key
 SIMPLYRETS_API_SECRET=your-secret
 ```
+
+Listing photos are served unoptimized (`images.unoptimized` in `next.config.ts`). The Next.js image optimizer stops waiting for an image host after a fixed 7 seconds, and SimplyRETS's image server is often slower than that.
 
 ## Getting started
 
@@ -49,13 +89,16 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```
 app/
-  page.tsx                     Home: hero search, types, newest listings
-  properties/page.tsx          Search results with filters and pagination
-  properties/error.tsx         Retryable error boundary for API failures
-  properties/[mlsId]/          Listing detail, loading and not-found
-components/                    Cards, grid, filters, gallery, header and footer
+  page.tsx                       Home: Nigerian search, cities, newest listings
+  properties/                    Nigerian search and detail pages
+  international/                 Hub page and per-country search and detail pages
+  international/us/              Live US search, detail, loading and error pages
+components/                      Cards, filters, gallery, detail view, layout
 lib/
-  simplyrets.ts                API client and Listing normalization
-  filters.ts                   URL search param schema and filter options
-  format.ts                    Price, number, date and label helpers
+  listing.ts                     Shared Listing type
+  search-params.ts               URL param parsing helpers shared by both markets
+  format.ts                      Currency, number and date formatting
+  markets/sample/                Sample markets: engine, filters, photos
+  markets/sample/data/           One data file per country
+  markets/us/                    SimplyRETS client and US filters
 ```
