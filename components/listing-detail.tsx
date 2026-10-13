@@ -26,11 +26,14 @@ export function ListingDetail({
   listing,
   backHref,
   breadcrumbs,
+  agentHref,
 }: {
   listing: Listing;
   backHref: string;
   /** Replaces the "Back to listings" link when set. */
   breadcrumbs?: ReactNode;
+  /** Links the agent's name to their profile page. */
+  agentHref?: string;
 }) {
   const listed = formatDate(listing.listedAt);
   const mapHref = listing.coords
@@ -144,7 +147,15 @@ export function ListingDetail({
             <p className="text-xs font-medium tracking-wide text-muted uppercase">Listed by</p>
             {listing.agent ? (
               <>
-                <p className="mt-2 text-lg font-semibold">{listing.agent.name}</p>
+                <p className="mt-2 text-lg font-semibold">
+                  {agentHref ? (
+                    <Link href={agentHref} className="hover:text-brand hover:underline">
+                      {listing.agent.name}
+                    </Link>
+                  ) : (
+                    listing.agent.name
+                  )}
+                </p>
                 {listing.agent.company && <p className="text-sm text-muted">{listing.agent.company}</p>}
                 <div className="mt-4 space-y-2">
                   {listing.agent.email && (

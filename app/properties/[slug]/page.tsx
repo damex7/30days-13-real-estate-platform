@@ -6,7 +6,7 @@ import { ListingDetail, listingMetadata } from "@/components/listing-detail";
 import { listingCrumbs } from "@/lib/locations";
 import { HOME_MARKET } from "@/lib/markets/sample";
 import { getSampleListing, getSampleListings } from "@/lib/markets/sample/listings";
-import { idFromPropertySlug } from "@/lib/urls";
+import { agentPath, idFromPropertySlug } from "@/lib/urls";
 
 // [slug] is a dynamic segment: the bracketed folder name captures one URL
 // segment and passes it to the page as params.slug.
@@ -45,6 +45,7 @@ export default async function ListingPage({ params }: Props) {
       listing={listing}
       backHref={HOME_MARKET.basePath}
       breadcrumbs={<Breadcrumbs items={listingCrumbs(listing.id, listing.title)} />}
+      agentHref={listing.agent ? agentPath(listing.agent.name) : undefined}
     />
   );
 }
