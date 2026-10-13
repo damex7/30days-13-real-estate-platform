@@ -76,6 +76,15 @@ export function sampleListingsHref(
   return buildHref(market.basePath, { ...filters, ...overrides }, DEFAULTS);
 }
 
+/** Like sampleListingsHref, for /buy and /rent pages whose path already holds the purpose and state. */
+export function sampleLocationHref(
+  path: string,
+  filters: Partial<SampleFilters>,
+  overrides: Partial<SampleFilters> = {},
+) {
+  return buildHref(path, { ...filters, ...overrides, purpose: undefined, region: undefined }, DEFAULTS);
+}
+
 export function hasActiveSampleFilters({ q, purpose, region, type, minprice, maxprice, minbeds }: SampleFilters) {
   return [q, purpose, region, type, minprice, maxprice, minbeds].some((v) => v != null);
 }

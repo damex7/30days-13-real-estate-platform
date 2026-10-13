@@ -19,6 +19,11 @@ export function propertyPath(headline: string, areaName: string, id: string) {
   return `/properties/${slugify(`${headline} ${areaName}`)}-${id}`;
 }
 
+/** /buy, /rent/lagos or /rent/lagos/lekki-phase-1. */
+export function locationPath(purpose: "buy" | "rent", state?: string, area?: string) {
+  return "/" + [purpose, state, area].filter(Boolean).join("/");
+}
+
 /** The trailing id of a property slug, so "…-lekki-phase-1-1006" and a bare "1006" both give "1006". */
 export function idFromPropertySlug(slug: string) {
   return /(?:^|-)(\d+)$/.exec(slug)?.[1] ?? null;

@@ -191,12 +191,14 @@ function entriesFor(market: SampleMarket) {
 
 const newestFirst = (a: Entry, b: Entry) => b.seed.listed.localeCompare(a.seed.listed) || b.seed.id - a.seed.id;
 
-export function searchSampleListings(market: SampleMarket, filters: SampleFilters): ListingResults {
+/** `area` is a key into `market.areas`; it comes from the URL path on location pages, never from the query. */
+export function searchSampleListings(market: SampleMarket, filters: SampleFilters & { area?: string }): ListingResults {
   const words = filters.q?.toLowerCase().split(/\s+/).filter(Boolean) ?? [];
 
   const matches = entriesFor(market).filter(({ seed, region, haystack }) => {
     if (filters.purpose && seed.purpose !== filters.purpose) return false;
     if (filters.region && region !== filters.region) return false;
+    if (filters.area && seed.area !== filters.area) return false;
     if (filters.type && seed.type !== filters.type) return false;
     if (filters.minprice != null && seed.price < filters.minprice) return false;
     if (filters.maxprice != null && seed.price > filters.maxprice) return false;

@@ -4,21 +4,30 @@ import Link from "next/link";
 
 import { ListingGrid } from "@/components/listing-grid";
 import { formatNumber } from "@/lib/format";
+import { statesFor } from "@/lib/locations";
 import { HOME_MARKET, INTERNATIONAL_MARKETS } from "@/lib/markets/sample";
-import { sampleListingsHref, samplePriceOptions, type SampleFilters } from "@/lib/markets/sample/filters";
+import {
+  sampleListingsHref,
+  sampleLocationHref,
+  samplePriceOptions,
+  type SampleFilters,
+} from "@/lib/markets/sample/filters";
 import { countSampleListingsByCity, getNewestSampleListings } from "@/lib/markets/sample/listings";
 import { US_BASE_PATH } from "@/lib/markets/us/filters";
+import { locationPath } from "@/lib/urls";
 
 const ngListingsHref = (filters: Partial<SampleFilters>) => sampleListingsHref(HOME_MARKET, filters);
 
+// Searches with a single purpose (and state) use the /buy and /rent location
+// paths; ones that span purposes or several areas stay on /properties.
 const POPULAR_SEARCHES = [
-  { label: "Flats for rent in Lagos", href: ngListingsHref({ purpose: "rent", type: "flat", region: "lagos" }) },
+  { label: "Flats for rent in Lagos", href: sampleLocationHref(locationPath("rent", "lagos"), { type: "flat" }) },
   { label: "Homes in Lekki", href: ngListingsHref({ q: "lekki" }) },
-  { label: "Duplexes for sale in Abuja", href: ngListingsHref({ purpose: "sale", type: "detached-duplex", region: "abuja" }) },
-  { label: "Land for sale", href: ngListingsHref({ purpose: "sale", type: "land" }) },
-  { label: "Rent under ₦5M a year", href: ngListingsHref({ purpose: "rent", maxprice: 5_000_000 }) },
-  { label: "Mini flats for rent", href: ngListingsHref({ purpose: "rent", type: "mini-flat" }) },
-  { label: "Homes over ₦500M", href: ngListingsHref({ purpose: "sale", minprice: 500_000_000 }) },
+  { label: "Duplexes for sale in Abuja", href: sampleLocationHref(locationPath("buy", "abuja"), { type: "detached-duplex" }) },
+  { label: "Land for sale", href: sampleLocationHref(locationPath("buy"), { type: "land" }) },
+  { label: "Rent under ₦5M a year", href: sampleLocationHref(locationPath("rent"), { maxprice: 5_000_000 }) },
+  { label: "Mini flats for rent", href: sampleLocationHref(locationPath("rent"), { type: "mini-flat" }) },
+  { label: "Homes over ₦500M", href: sampleLocationHref(locationPath("buy"), { minprice: 500_000_000 }) },
   { label: "Homes in Port Harcourt", href: ngListingsHref({ region: "rivers" }) },
 ];
 
@@ -28,6 +37,8 @@ const SELECT =
 export default function HomePage() {
   const newest = getNewestSampleListings(HOME_MARKET);
   const cities = countSampleListingsByCity(HOME_MARKET);
+  const saleStates = new Set(statesFor("sale").map((s) => s.value));
+  const rentStates = new Set(statesFor("rent").map((s) => s.value));
 
   return (
     <>
@@ -106,21 +117,31 @@ export default function HomePage() {
         <h2 className="text-xl font-semibold tracking-tight">Browse by city</h2>
         <ul className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {cities.map((c) => (
-            <li key={c.city}>
-              <Link
-                href={ngListingsHref({ region: c.region })}
-                className="flex h-full items-center gap-3 rounded-xl border border-line bg-surface p-4 transition hover:border-brand"
-              >
-                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
-                  <MapPin className="size-5" aria-hidden />
+            <li
+              key={c.city}
+              className="flex h-full items-center gap-3 rounded-xl border border-line bg-surface p-4"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
+                <MapPin className="size-5" aria-hidden />
+              </span>
+              <span>
+                <span className="block font-medium">{c.city}</span>
+                <span className="block text-sm text-muted">
+                  {formatNumber(c.count)} {c.count === 1 ? "listing" : "listings"}
                 </span>
-                <span>
-                  <span className="block font-medium">{c.city}</span>
-                  <span className="block text-sm text-muted">
-                    {formatNumber(c.count)} {c.count === 1 ? "listing" : "listings"}
-                  </span>
+                <span className="mt-1 flex gap-3 text-sm font-medium text-brand">
+                  {saleStates.has(c.region) && (
+                    <Link href={locationPath("buy", c.region)} className="hover:underline">
+                      For sale<span className="sr-only"> in {c.city}</span>
+                    </Link>
+                  )}
+                  {rentStates.has(c.region) && (
+                    <Link href={locationPath("rent", c.region)} className="hover:underline">
+                      To rent<span className="sr-only"> in {c.city}</span>
+                    </Link>
+                  )}
                 </span>
-              </Link>
+              </span>
             </li>
           ))}
         </ul>

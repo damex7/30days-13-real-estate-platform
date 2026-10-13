@@ -13,27 +13,50 @@ import {
   hasActiveSampleFilters,
   sampleFilterFields,
   sampleListingsHref,
+  sampleLocationHref,
   type SampleFilters,
 } from "@/lib/markets/sample/filters";
 import { searchSampleListings } from "@/lib/markets/sample/listings";
 import type { SampleMarket } from "@/lib/markets/sample/types";
+
+/** Set on /buy and /rent pages, where the purpose, state and area come from the path. */
+export type SearchLocation = {
+  path: string;
+  heading: string;
+  /** Key into `market.areas`. */
+  area?: string;
+};
 
 /** Search page body for any market backed by the sample dataset. */
 export function SampleMarketSearch({
   market,
   filters,
   eyebrow,
+  location,
 }: {
   market: SampleMarket;
   filters: SampleFilters;
   eyebrow?: ReactNode;
+  location?: SearchLocation;
 }) {
-  const { listings, hasNext, total } = searchSampleListings(market, filters);
+  const { listings, hasNext, total } = searchSampleListings(market, { ...filters, area: location?.area });
+
+  // On location pages the purpose and state are fixed by the path, so they
+  // leave the form and the query strings; everything else works the same.
+  const basePath = location?.path ?? market.basePath;
+  const href = (overrides: Partial<SampleFilters> = {}) =>
+    location ? sampleLocationHref(location.path, filters, overrides) : sampleListingsHref(market, filters, overrides);
+  const fields = sampleFilterFields(market, filters).filter(
+    (f) => !location || (f.name !== "purpose" && f.name !== "region"),
+  );
+  const showClear = hasActiveSampleFilters(
+    location ? { ...filters, purpose: undefined, region: undefined } : filters,
+  );
 
   return (
     <SearchLayout
       eyebrow={eyebrow}
-      title={describeSampleSearch(market, filters)}
+      title={location?.heading ?? describeSampleSearch(market, filters)}
       subtitle={
         <>
           {formatNumber(total ?? 0)} {total === 1 ? "property" : "properties"}
@@ -42,14 +65,14 @@ export function SampleMarketSearch({
       }
       filters={
         <SearchFilters
-          action={market.basePath}
-          formKey={sampleListingsHref(market, filters)}
+          action={basePath}
+          formKey={href()}
           keyword={filters.q}
           keywordPlaceholder={market.keywordPlaceholder}
-          fields={sampleFilterFields(market, filters)}
+          fields={fields}
           sortOptions={SAMPLE_SORT_OPTIONS}
           sort={filters.sort}
-          showClear={hasActiveSampleFilters(filters)}
+          showClear={showClear}
         />
       }
     >
@@ -58,15 +81,15 @@ export function SampleMarketSearch({
           icon={SearchX}
           title="No properties match those filters"
           description={`Try a wider price range, fewer bedrooms, or another ${market.regionLabel.toLowerCase()}.`}
-          action={{ href: market.basePath, label: "Clear filters" }}
+          action={{ href: basePath, label: "Clear filters" }}
         />
       ) : (
         <>
           <ListingGrid listings={listings} />
           <Pagination
             page={filters.page}
-            prevHref={filters.page > 1 ? sampleListingsHref(market, filters, { page: filters.page - 1 }) : null}
-            nextHref={hasNext ? sampleListingsHref(market, filters, { page: filters.page + 1 }) : null}
+            prevHref={filters.page > 1 ? href({ page: filters.page - 1 }) : null}
+            nextHref={hasNext ? href({ page: filters.page + 1 }) : null}
           />
         </>
       )}

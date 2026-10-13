@@ -22,7 +22,16 @@ export function listingMetadata(listing: Listing): Metadata {
   };
 }
 
-export function ListingDetail({ listing, backHref }: { listing: Listing; backHref: string }) {
+export function ListingDetail({
+  listing,
+  backHref,
+  breadcrumbs,
+}: {
+  listing: Listing;
+  backHref: string;
+  /** Replaces the "Back to listings" link when set. */
+  breadcrumbs?: ReactNode;
+}) {
   const listed = formatDate(listing.listedAt);
   const mapHref = listing.coords
     ? `https://www.google.com/maps/search/?api=1&query=${listing.coords.lat},${listing.coords.lng}`
@@ -43,9 +52,11 @@ export function ListingDetail({ listing, backHref }: { listing: Listing; backHre
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground">
-        <ArrowLeft className="size-4" aria-hidden /> Back to listings
-      </Link>
+      {breadcrumbs ?? (
+        <Link href={backHref} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground">
+          <ArrowLeft className="size-4" aria-hidden /> Back to listings
+        </Link>
+      )}
 
       <div className="mt-4">
         <PhotoGallery photos={listing.photos} alt={listing.title} />

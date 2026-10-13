@@ -16,17 +16,20 @@ type NavItem = {
 };
 
 const onSearch = (pathname: string) => pathname === "/properties";
+const under = (pathname: string, base: string) => pathname === base || pathname.startsWith(`${base}/`);
 
 const NAV: NavItem[] = [
   {
-    href: "/properties?purpose=sale",
+    href: "/buy",
     label: "Buy",
-    isActive: (p, s) => onSearch(p) && s.get("purpose") === "sale" && s.get("type") !== "land",
+    isActive: (p, s) =>
+      s.get("type") !== "land" && (under(p, "/buy") || (onSearch(p) && s.get("purpose") === "sale")),
   },
   {
-    href: "/properties?purpose=rent",
+    href: "/rent",
     label: "Rent",
-    isActive: (p, s) => onSearch(p) && s.get("purpose") === "rent" && s.get("type") !== "land",
+    isActive: (p, s) =>
+      s.get("type") !== "land" && (under(p, "/rent") || (onSearch(p) && s.get("purpose") === "rent")),
   },
   {
     href: "/properties?type=land",
@@ -74,9 +77,9 @@ function NavLinksWithSearch() {
 }
 
 /**
- * Buy, Rent and Land all point at /properties, so their active state depends
- * on the query string. Prerendered pages can't read it on the server; the
- * fallback highlights what the pathname alone decides (International) and the
+ * Buy and Rent live at /buy and /rent, but Land and older /properties?purpose=
+ * links still depend on the query string. Prerendered pages can't read it on
+ * the server; the fallback highlights what the pathname alone decides and the
  * rest fills in on the client.
  */
 export function MainNav() {

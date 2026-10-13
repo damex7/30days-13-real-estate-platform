@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ListingDetail, listingMetadata } from "@/components/listing-detail";
+import { listingCrumbs } from "@/lib/locations";
 import { HOME_MARKET } from "@/lib/markets/sample";
 import { getSampleListing, getSampleListings } from "@/lib/markets/sample/listings";
 import { idFromPropertySlug } from "@/lib/urls";
@@ -37,5 +39,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ListingPage({ params }: Props) {
-  return <ListingDetail listing={await loadListing(params)} backHref={HOME_MARKET.basePath} />;
+  const listing = await loadListing(params);
+  return (
+    <ListingDetail
+      listing={listing}
+      backHref={HOME_MARKET.basePath}
+      breadcrumbs={<Breadcrumbs items={listingCrumbs(listing.id, listing.title)} />}
+    />
+  );
 }
