@@ -2,9 +2,11 @@ import "server-only";
 
 import { formatAmount, formatNumber } from "@/lib/format";
 import type { Listing, ListingResults } from "@/lib/listing";
+import { HOME_MARKET } from "@/lib/markets/sample";
 import { SAMPLE_PAGE_SIZE, type SampleFilters } from "@/lib/markets/sample/filters";
 import { PHOTO_POOLS, unsplash } from "@/lib/markets/sample/photos";
 import type { PropertyTypeDef, SampleMarket, Seed } from "@/lib/markets/sample/types";
+import { propertyPath } from "@/lib/urls";
 
 const listFormat = new Intl.ListFormat("en-GB", { type: "conjunction" });
 
@@ -120,10 +122,16 @@ function toListing(market: SampleMarket, seed: Seed): Listing {
 
   const title = titleFor(market, seed, type);
   const id = String(seed.id);
+  // Home-market URLs are readable slugs built from the title (without suffixes
+  // like "with BQ") and area; international URLs keep the plain id.
+  const href =
+    market === HOME_MARKET
+      ? propertyPath(titleFor(market, { ...seed, titleSuffix: undefined }, type), area.name, id)
+      : `${market.basePath}/${id}`;
 
   return {
     id,
-    href: `${market.basePath}/${id}`,
+    href,
     reference: `Ref HS-${market.code}-${id}`,
     title,
     address: seed.street,
@@ -214,6 +222,10 @@ export function getSampleListing(market: SampleMarket, id: string) {
 
 export function getSampleListingIds(market: SampleMarket) {
   return entriesFor(market).map((e) => e.listing.id);
+}
+
+export function getSampleListings(market: SampleMarket) {
+  return entriesFor(market).map((e) => e.listing);
 }
 
 export function getNewestSampleListings(market: SampleMarket, count = 6) {
