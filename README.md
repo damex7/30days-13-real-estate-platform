@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hearthstone Realty: Day 13 Real Estate Platform
 
-## Getting Started
+A server-rendered real estate listings site built with Next.js 16.4 (App Router), TypeScript and Tailwind CSS v4. Listing data comes live from the [SimplyRETS](https://simplyrets.com) API.
 
-First, run the development server:
+## Features
+
+- **Home page** with a hero search, quick links by property type, and the newest active listings.
+- **Listings search** at `/properties`. Filters for keyword, property type, price range, minimum beds and baths, and sort order are kept in the URL, so every search can be shared and bookmarked. Pagination keeps the active filters.
+- **Property detail pages** at `/properties/[mlsId]`:
+  - photo gallery with arrow-key navigation;
+  - key stats, description, property details, features and schools;
+  - agent contact card;
+  - map link.
+- **Loading, empty, error and not-found states** throughout. The demo API can be slow, so results stream in behind skeletons.
+
+## Data source
+
+`lib/simplyrets.ts` is a server-only client for the SimplyRETS REST API:
+
+- Responses are validated with zod and normalized into a flat `Listing` type. Unexpected or missing fields fall back to `null` instead of failing the page.
+- Requests are cached for an hour (`next: { revalidate: 3600, tags: ["listings"] }`). Only the first visit to a given search has to wait for the API.
+- Search params are parsed and clamped in `lib/filters.ts`. Invalid values are ignored rather than causing errors.
+
+By default the app uses the public demo credentials (`simplyrets` / `simplyrets`). These return sample listings around Houston, TX. To use your own feed, copy `.env.example` to `.env.local` and fill in your credentials:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+SIMPLYRETS_API_KEY=your-key
+SIMPLYRETS_API_SECRET=your-secret
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Getting started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Learn More
+| Script              | Purpose                              |
+| ------------------- | ------------------------------------ |
+| `npm run dev`       | Start the dev server                 |
+| `npm run build`     | Production build                     |
+| `npm run start`     | Serve the production build           |
+| `npm run lint`      | ESLint                               |
+| `npm run typecheck` | Generate route types and run `tsc`   |
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  page.tsx                     Home: hero search, types, newest listings
+  properties/page.tsx          Search results with filters and pagination
+  properties/error.tsx         Retryable error boundary for API failures
+  properties/[mlsId]/          Listing detail, loading and not-found
+components/                    Cards, grid, filters, gallery, header and footer
+lib/
+  simplyrets.ts                API client and Listing normalization
+  filters.ts                   URL search param schema and filter options
+  format.ts                    Price, number, date and label helpers
+```
