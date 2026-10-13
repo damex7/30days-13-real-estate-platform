@@ -38,6 +38,12 @@ const NAV: NavItem[] = [
     isActive: (p, s) => onSearch(p) && s.get("type") === "land",
   },
   {
+    href: "/areas",
+    label: "Areas",
+    desktopOnly: true,
+    isActive: (p) => under(p, "/areas"),
+  },
+  {
     href: "/international",
     label: "International",
     isActive: (p) => p === "/international" || p.startsWith("/international/"),

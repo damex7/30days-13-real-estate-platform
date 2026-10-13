@@ -24,6 +24,11 @@ export function locationPath(purpose: "buy" | "rent", state?: string, area?: str
   return "/" + [purpose, state, area].filter(Boolean).join("/");
 }
 
+/** /areas, /areas/lagos or /areas/lagos/yaba. */
+export function areaGuidePath(state?: string, area?: string) {
+  return ["/areas", state, area].filter(Boolean).join("/");
+}
+
 /** The trailing id of a property slug, so "…-lekki-phase-1-1006" and a bare "1006" both give "1006". */
 export function idFromPropertySlug(slug: string) {
   return /(?:^|-)(\d+)$/.exec(slug)?.[1] ?? null;

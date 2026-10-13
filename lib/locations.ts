@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import type { Crumb } from "@/components/breadcrumbs";
 import { HOME_MARKET } from "@/lib/markets/sample";
+import { getSampleListing } from "@/lib/markets/sample/listings";
 import type { Area, Seed } from "@/lib/markets/sample/types";
 import type { Option } from "@/lib/search-params";
 import { locationPath, slugify } from "@/lib/urls";
@@ -116,6 +117,36 @@ export function childLocations(location: Location): Option[] {
     }));
   }
   return statesFor(purpose).map((s) => ({ label: s.label, value: locationPath(segment, s.value) }));
+}
+
+const average = (list: Seed[]) =>
+  list.length ? Math.round(list.reduce((sum, s) => sum + s.price, 0) / list.length) : null;
+
+/** Listing counts and average prices for one area, calculated from the data. */
+export function areaStats(areaKey: string) {
+  const inArea = seeds.filter((s) => s.area === areaKey);
+  const rentals = inArea.filter((s) => s.purpose === "rent");
+  // Land is priced per plot, not per home, so it would skew the sale average.
+  const homesForSale = inArea.filter((s) => s.purpose === "sale" && s.type !== "land");
+  return {
+    total: inArea.length,
+    rent: { average: average(rentals), count: rentals.length },
+    sale: { average: average(homesForSale), count: homesForSale.length },
+    landCount: inArea.filter((s) => s.type === "land").length,
+  };
+}
+
+/** All listings in an area, newest first. */
+export function listingsInArea(areaKey: string) {
+  return [...seeds]
+    .filter((s) => s.area === areaKey)
+    .sort((a, b) => b.listed.localeCompare(a.listed))
+    .map((s) => getSampleListing(HOME_MARKET, String(s.id)))
+    .filter((listing) => listing != null);
+}
+
+export function countListingsInState(state: string) {
+  return seeds.filter((s) => HOME_MARKET.areas[s.area].region === state).length;
 }
 
 /** Home › Buy › Lagos › Lekki Phase 1 › title, for a property page. */

@@ -1,3 +1,4 @@
+import { BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -7,6 +8,7 @@ import { childLocations, type Location } from "@/lib/locations";
 import { HOME_MARKET } from "@/lib/markets/sample";
 import { parseSampleFilters } from "@/lib/markets/sample/filters";
 import { labelFor, type RawSearchParams } from "@/lib/search-params";
+import { areaGuidePath } from "@/lib/urls";
 
 export function locationMetadata(location: Location): Metadata {
   return {
@@ -45,6 +47,14 @@ export function LocationSearch({ location, searchParams }: { location: Location;
       eyebrow={
         <div className="space-y-3">
           <Breadcrumbs items={location.crumbs} />
+          {location.state && location.area && (
+            <Link
+              href={areaGuidePath(location.state.value, location.area.slug)}
+              className="inline-flex items-center gap-1.5 font-medium text-brand hover:underline"
+            >
+              <BookOpen className="size-4" aria-hidden /> Read the {location.area.area.name} area guide
+            </Link>
+          )}
           {children.length > 0 && (
             <ul className="flex flex-wrap gap-2">
               {children.map((c) => (
