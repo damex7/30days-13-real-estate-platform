@@ -8,6 +8,7 @@ import { ListingGrid, ListingGridSkeleton } from "@/components/listing-grid";
 import { Pagination } from "@/components/pagination";
 import { SearchFilters } from "@/components/search-filters";
 import { SearchLayout } from "@/components/search-layout";
+import { UsDemoNotice } from "@/components/us-demo-notice";
 import {
   US_BASE_PATH,
   US_SORT_OPTIONS,
@@ -61,6 +62,7 @@ export default async function UsPropertiesPage(props: PageProps<"/international/
         />
       }
     >
+      <UsDemoNotice className="mb-6" />
       {/* A fresh key per query shows the skeleton while new results load. */}
       <Suspense key={usListingsHref(filters)} fallback={<ListingGridSkeleton count={9} />}>
         <Results filters={filters} />

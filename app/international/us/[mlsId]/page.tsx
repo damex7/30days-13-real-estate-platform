@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { ListingDetail, listingMetadata } from "@/components/listing-detail";
+import { UsDemoNotice } from "@/components/us-demo-notice";
 import { US_BASE_PATH } from "@/lib/markets/us/filters";
 import { getUsListing } from "@/lib/markets/us/simplyrets";
 
@@ -22,5 +23,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function UsListingPage({ params }: Props) {
   const listing = await loadListing((await params).mlsId);
-  return <ListingDetail listing={listing} backHref={US_BASE_PATH} />;
+  return (
+    <>
+      <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+        <UsDemoNotice />
+      </div>
+      <ListingDetail listing={listing} backHref={US_BASE_PATH} />
+    </>
+  );
 }
