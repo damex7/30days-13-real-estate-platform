@@ -27,6 +27,8 @@ export function ListingDetail({
   backHref,
   breadcrumbs,
   agentHref,
+  contactActions,
+  costs,
 }: {
   listing: Listing;
   backHref: string;
@@ -34,6 +36,10 @@ export function ListingDetail({
   breadcrumbs?: ReactNode;
   /** Links the agent's name to their profile page. */
   agentHref?: string;
+  /** Extra buttons under "Email agent". */
+  contactActions?: ReactNode;
+  /** Cost calculator shown after the property details. */
+  costs?: ReactNode;
 }) {
   const listed = formatDate(listing.listedAt);
   const mapHref = listing.coords
@@ -114,6 +120,8 @@ export function ListingDetail({
             </Section>
           )}
 
+          {costs}
+
           {listing.features.length > 0 && (
             <Section title="Features">
               <ul className="flex flex-wrap gap-2">
@@ -174,6 +182,7 @@ export function ListingDetail({
                       <Phone className="size-4" aria-hidden /> {listing.agent.phone}
                     </a>
                   )}
+                  {contactActions}
                 </div>
               </>
             ) : (

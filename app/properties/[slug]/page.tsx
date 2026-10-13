@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { ContactActions } from "@/components/contact-actions";
 import { ListingDetail, listingMetadata } from "@/components/listing-detail";
+import { MortgageEstimate } from "@/components/mortgage-estimate";
+import { MoveInCost } from "@/components/move-in-cost";
 import { listingCrumbs } from "@/lib/locations";
 import { HOME_MARKET } from "@/lib/markets/sample";
 import { getSampleListing, getSampleListings } from "@/lib/markets/sample/listings";
@@ -46,6 +49,14 @@ export default async function ListingPage({ params }: Props) {
       backHref={HOME_MARKET.basePath}
       breadcrumbs={<Breadcrumbs items={listingCrumbs(listing.id, listing.title)} />}
       agentHref={listing.agent ? agentPath(listing.agent.name) : undefined}
+      contactActions={<ContactActions listing={listing} />}
+      costs={
+        listing.price == null ? null : listing.pricePeriod ? (
+          <MoveInCost rent={listing.price} currency={listing.currency} />
+        ) : (
+          <MortgageEstimate price={listing.price} currency={listing.currency} />
+        )
+      }
     />
   );
 }
