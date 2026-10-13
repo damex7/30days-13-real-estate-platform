@@ -2,8 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // SimplyRETS serves listing photos from this CloudFront distribution.
-    remotePatterns: [new URL("https://d2bd5h5te3s67r.cloudfront.net/**")],
+    // Listing photos are already small web JPEGs on SimplyRETS's CloudFront, so
+    // the browser loads them directly. Routing them through the optimizer hit
+    // its fixed 7s upstream timeout on slow connections and returned 504s.
+    unoptimized: true,
   },
   turbopack: {
     rules: {
